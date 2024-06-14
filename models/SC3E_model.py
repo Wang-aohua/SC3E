@@ -20,7 +20,7 @@ class SC3EModel(BaseModel):
         parser.add_argument('--nce_includes_all_negatives_from_minibatch',
                             type=util.str2bool, nargs='?', const=True, default=False,
                             help='(used for single image translation) If True, include the negatives from the other samples of the minibatch when computing the contrastive loss. Please see models/patchnce.py for more details.')
-        parser.add_argument('--netF_nc', type=int, default=256)
+        parser.add_argument('--netM_nc', type=int, default=256)
         parser.add_argument('--nce_T', type=float, default=0.07, help='temperature for NCE loss')
         parser.add_argument('--num_patches', type=int, default=256, help='number of patches per layer')
 
@@ -48,7 +48,7 @@ class SC3EModel(BaseModel):
             self.model_names = ['N']
 
         self.netN = networks.define_N(opt.input_nc, opt.output_nc, opt.ngf, opt.normN, not opt.no_dropout, opt.init_type, opt.init_gain, opt.no_antialias, opt.no_antialias_up, self.gpu_ids, opt)
-        self.netM = PatchSampleF(use_mlp=True, init_type=opt.init_type, init_gain=opt.init_gain, gpu_ids=self.gpu_ids, nc=opt.netF_nc)
+        self.netM = PatchSampleF(use_mlp=True, init_type=opt.init_type, init_gain=opt.init_gain, gpu_ids=self.gpu_ids, nc=opt.netM_nc)
         self.netM = init_net(self.netM, opt.init_type, opt.init_gain, self.gpu_ids)
 
         if self.isTrain:
@@ -61,10 +61,12 @@ class SC3EModel(BaseModel):
             self.optimizer_N = torch.optim.Adam(self.netN.parameters(), lr=opt.lr, betas=(opt.beta1, opt.beta2))
             self.optimizers.append(self.optimizer_N)
 
-    def data_dependent_initialize(self, data):
+    def data_dependent_initialize(self, data, train=True):
         bs_per_gpu = data.size(0) // max(len(self.opt.gpu_ids), 1)
-        self.set_input(data)
-
+        if train:
+            self.set_input(data)
+        else:
+            self.set_input(data,train=False)
         self.input_hdr = self.input_hdr[:bs_per_gpu]
         self.input_ldr = self.input_ldr[:bs_per_gpu]
         self.forward()
@@ -86,14 +88,12 @@ class SC3EModel(BaseModel):
         if train:
             t = np.random.randint(0, (self.highest_DR-self.lowest_DR)/5+1, [1])
             DR = self.lowest_DR + t * 5
-            input_hdr = pre_process(input[:, 0:1, :, :], DR)
-            input_ldr = pre_process(input[:, 0:1, :, :], int(DR * 2 / 3), low=True)
         else:
             DR = 60
-            input_hdr = pre_process(input[:, 0:1, :, :], DR)
-            input_ldr = pre_process(input[:, 0:1, :, :], int(DR*2/3))
+        input_hdr = pre_process(input[:, 0:1, :, :], DR)
+        input_ldr = pre_process(input[:, 0:1, :, :], int(DR*2/3), low=train)
 
-        if self.opt.patch_size>0 and train:
+        if train and self.opt.patch_size > 0:
             data = crop(torch.cat((input_hdr,input_ldr),dim=1),self.opt.patch_size)
             input_hdr = data[:,0:1,:,:]
             input_ldr = data[:,1:2,:,:]

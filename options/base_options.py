@@ -40,7 +40,7 @@ class BaseOptions():
         parser.add_argument('--no_antialias', action='store_true', help='if specified, use stride=2 convs instead of antialiased-downsampling (sad)')
         parser.add_argument('--no_antialias_up', action='store_true', help='if specified, use [upconv(learned filter)] instead of [upconv(hard-coded [1,3,3,1] filter), conv]')
         # additional parameters
-        parser.add_argument('--epoch', type=str, default='1000', help='which epoch to load?')
+        parser.add_argument('--epoch', type=str, default='800', help='which epoch to load?')
         parser.add_argument('--verbose', action='store_true', help='if specified, print more debugging information')
         parser.add_argument('--suffix', default='', type=str, help='customized suffix: opt.name = opt.name + suffix: e.g., {model}_{netN}_size{load_size}')
 

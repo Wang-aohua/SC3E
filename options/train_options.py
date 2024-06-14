@@ -11,10 +11,10 @@ class TrainOptions(BaseOptions):
         parser = BaseOptions.initialize(self, parser)
         # network saving and loading parameters
         parser.add_argument('--save_epoch_freq', type=int, default=1, help='frequency of saving checkpoints at the end of epochs')
-        parser.add_argument('--continue_train', action='store_true', help='continue training: load the latest model')
+        parser.add_argument('--continue_train', action='store_true', help='continue training')
         parser.add_argument('--epoch_count', type=int, default=1, help='the starting epoch count, we save the model by <epoch_count>, <epoch_count>+<save_latest_freq>, ...')
         parser.add_argument('--phase', type=str, default='train', help='train, val, test, etc')
-        parser.add_argument('--pretrained_name', type=str, default=None, help='resume training from another checkpoint')
+        parser.add_argument('--pretrained_name', type=str, default=None, help='resume training from one checkpoint')
 
         # training parameters
         parser.add_argument('--n_epochs', type=int, default=600, help='number of epochs with the initial learning rate')
@@ -28,7 +28,7 @@ class TrainOptions(BaseOptions):
         parser.add_argument('--lr_policy', type=str, default='linear', help='learning rate policy. [linear | step | plateau | cosine]')
         parser.add_argument('--lr_decay_iters', type=int, default=50, help='multiply by a gamma every lr_decay_iters iterations')
 
-        # eval
+        # val
         parser.add_argument('--val_interval', type=int, default=10, help='the interval between the output images in the validation set')
 
         self.isTrain = True

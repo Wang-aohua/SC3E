@@ -30,8 +30,8 @@ if __name__ == '__main__':
                                               pin_memory=True)
 
     val_data_loader = torch.utils.data.DataLoader(val_dataset, batch_size=opt.val_interval, shuffle=False, num_workers=2,
-                                                   pin_memory=True)  # create a dataset given opt.dataset_mode and other options
-    dataset_size = len(train_dataset)  # get the number of images in the dataset.
+                                                   pin_memory=True)
+    dataset_size = len(train_dataset)
 
     model = create_model(opt)
     print('The number of training images = %d' % dataset_size)
@@ -59,9 +59,6 @@ if __name__ == '__main__':
             if len(opt.gpu_ids) > 0:
                 torch.cuda.synchronize()
             optimize_time = (time.time() - optimize_start_time) / opt.batch_size * 0.005 + 0.995 * optimize_time
-
-
-            # print training losses and save logging information to the disk
             losses = model.get_current_losses()
             pbar.set_postfix(loss = losses)
 
